@@ -38,11 +38,10 @@ def convert_to_llama2_format_test_data(example):
 
 
 def read_data(data):
-    if data == "samsum":
+    if data == "samsumBad":
+        # With adversarial attack
         train_path = "datasets/samsum_1000_bad.jsonl"
-        test_path = "datasets/samsum_test.jsonl"
         train_data = load_data(train_path)
-        test_data = load_data(test_path)
         
         # Convert both train and test with remove_columns to keep only "example"
 
@@ -51,14 +50,24 @@ def read_data(data):
             remove_columns=["messages"]  # Remove original columns
         )
 
-        test_dataset = Dataset.from_list(test_data).map(
-            convert_to_llama2_format_test_data, 
+        dataset = DatasetDict({
+            "train": train_dataset
+        })
+
+        return dataset
+    elif data == "samsum":
+        # Without adversarial attack
+        train_path = "datasets/samsum_1000_bad.jsonl"
+        train_data = load_data(train_path)
+        train_data = train_data[:1000]
+
+        train_dataset = Dataset.from_list(train_data).map(
+            convert_to_llama2_format_train_data, 
             remove_columns=["messages"]  # Remove original columns
         )
 
         dataset = DatasetDict({
-            "train": train_dataset,
-            "test": test_dataset
+            "train": train_dataset
         })
 
         return dataset
